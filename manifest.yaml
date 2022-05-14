@@ -1,0 +1,84 @@
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubeberth-system
+
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: berth-apiserver-cr
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: berth-apiserver-sa
+  namespace: kubeberth-system
+
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: berth-apiserver-crd
+subjects:
+- kind: ServiceAccount
+  name: berth-apiserver-sa
+  namespace: berth-system
+roleRef:
+  kind: ClusterRole
+  name: berth-apiserver-cr
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: berth-apiserver
+  namespace: kubeberth-system
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: berth-apiserver
+  template:
+    metadata:
+      labels:
+        app: berth-apiserver
+    spec:
+      serviceAccount: berth-apiserver-sa
+      containers:
+      - name: berth-apiserver
+        image: kubeberth/berthapiserver:v1alpha1
+        imagePullPolicy: Always
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: berth-apiserver
+  namespace: kubeberth-system
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: api.kubeberth.k8s.arpa
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 2022
+  selector:
+    app: berth-apiserver
+
+---

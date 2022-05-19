@@ -10,18 +10,39 @@ metadata:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: berth-apiserver-cr
+  name: berth-apiserver
 rules:
-- apiGroups: ["*"]
-  resources: ["*"]
-  verbs: ["*"]
+- apiGroups:
+  - berth.kubeberth.io
+  resources:
+  - archives
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - berth.kubeberth.io
+  resources:
+  - cloudinits
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 
 ---
 
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: berth-apiserver-sa
+  name: berth-apiserver
   namespace: kubeberth-system
 
 ---
@@ -29,15 +50,15 @@ metadata:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: berth-apiserver-crd
+  name: berth-apiserver
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: berth-apiserver
 subjects:
 - kind: ServiceAccount
-  name: berth-apiserver-sa
-  namespace: berth-system
-roleRef:
-  kind: ClusterRole
-  name: berth-apiserver-cr
-  apiGroup: rbac.authorization.k8s.io
+  name: berth-apiserver
+  namespace: kubeberth-system
 
 ---
 
@@ -56,11 +77,17 @@ spec:
       labels:
         app: berth-apiserver
     spec:
-      serviceAccount: berth-apiserver-sa
+      serviceAccountName: berth-apiserver
+      securityContext:
+        runAsNonRoot: true
       containers:
       - name: berth-apiserver
         image: kubeberth/berth-apiserver:v1alpha1
         imagePullPolicy: Always
+        ports:
+        - containerPort: 2022
+          name: berth-apiserver
+          protocol: TCP
 
 ---
 
@@ -75,7 +102,8 @@ spec:
   type: LoadBalancer
   externalTrafficPolicy: Local
   ports:
-  - protocol: TCP
+  - name: berth-apiserver
+    protocol: TCP
     port: 80
     targetPort: 2022
   selector:

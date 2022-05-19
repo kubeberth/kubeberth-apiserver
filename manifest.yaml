@@ -59,7 +59,7 @@ spec:
       serviceAccount: berth-apiserver-sa
       containers:
       - name: berth-apiserver
-        image: kubeberth/berthapiserver:v1alpha1
+        image: kubeberth/berth-apiserver:v1alpha1
         imagePullPolicy: Always
 
 ---

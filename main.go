@@ -7,6 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	clientset "github.com/kubeberth/berth-operator/pkg/clientset/versioned"
+	"github.com/kubeberth/berth-apiserver/pkg/berth"
+	"github.com/kubeberth/berth-apiserver/pkg/archives"
 	"github.com/kubeberth/berth-apiserver/pkg/healthz"
 )
 
@@ -17,20 +20,32 @@ func main() {
 	if err != nil {
 		config, err = clientcmd.BuildConfigFromFlags("", clientcmd.RecommendedHomeFile)
 		if err != nil {
-			klog.Fatalf("Error building kubeconfig: %s", err.Error())
+			klog.Fatalf("building kubeconfig: %s", err.Error())
 		}
 	}
 
-	klog.Info(config)
+	berth.Clientset, err = clientset.NewForConfig(config)
+	if err != nil {
+		klog.Fatalf("clientset.NewForConfig: %s", err.Error())
+		return
+	}
 
-	r := gin.Default()
+	g := gin.Default()
+	r := g.Group("/api/v1alpha1")
 
-	r.GET("/api/v1alpha1/healthz", healthz.Healthz)
-	r.GET("/api/v1alpha1/healthz/", healthz.Healthz)
+	r.GET("/archives",          archives.GetAllArchives)
+	r.GET("/archives/",         archives.GetAllArchives)
+	r.GET("/archives/:name",    archives.GetArchive)
+	r.POST("/archives",         archives.CreateArchive)
+	r.POST("/archives/",        archives.CreateArchive)
+	r.PUT("/archives/:name",    archives.UpdateArchive)
+	r.DELETE("/archives/:name", archives.DeleteArchive)
+	r.GET("/healthz",           healthz.Healthz)
+	r.GET("/healthz/",          healthz.Healthz)
 
-	klog.Info("start")
+	klog.Info("Start")
 
-	if err := r.Run(":2022"); err != nil {
-		klog.Fatalf(err.Error())
+	if err := g.Run(":2022"); err != nil {
+		klog.Fatalf("start: %s", err.Error())
 	}
 }

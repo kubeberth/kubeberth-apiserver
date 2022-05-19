@@ -1,4 +1,4 @@
-package archives
+package cloudinits
 
 import (
 	"context"
@@ -12,34 +12,35 @@ import (
 	"github.com/kubeberth/berth-apiserver/pkg/berth"
 )
 
-type JsonArchiveRequest struct {
+type JsonCloudInitRequest struct {
 	Name string `json:"name"`
-	URL string `json:"url"`
+	UserData string `json:"userData"`
+	NetworkData string `json:"networkData"`
 }
 
-func GetAllArchives(ctx *gin.Context) {
+func GetAllCloudInits(ctx *gin.Context) {
 	namespace := "kubeberth"
-	archives, err := berth.Clientset.Archives().Archives(namespace).List(context.TODO(), metav1.ListOptions{})
+	cloudinits, err := berth.Clientset.CloudInits().CloudInits(namespace).List(context.TODO(), metav1.ListOptions{})
 
-	if err != nil || len(archives.Items) == 0 {
+	if err != nil || len(cloudinits.Items) == 0 {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "not found",
 		})
 		return
 	}
 
-	var ret []v1alpha1.Archive
-	for _, archive := range archives.Items {
-		ret = append(ret, archive)
+	var ret []v1alpha1.CloudInit
+	for _, cloudinit := range cloudinits.Items {
+		ret = append(ret, cloudinit)
 	}
 
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func GetArchive(ctx *gin.Context) {
+func GetCloudInit(ctx *gin.Context) {
 	name := ctx.Param("name")
 	namespace := "kubeberth"
-	ret, err := berth.Clientset.Archives().Archives(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	ret, err := berth.Clientset.CloudInits().CloudInits(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -51,8 +52,8 @@ func GetArchive(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func CreateArchive(ctx *gin.Context) {
-	var j JsonArchiveRequest
+func CreateCloudInit(ctx *gin.Context) {
+	var j JsonCloudInitRequest
 	if err := ctx.ShouldBindJSON(&j); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "request invalid",
@@ -62,19 +63,21 @@ func CreateArchive(ctx *gin.Context) {
 
 	name := j.Name
 	namespace := "kubeberth"
-	url := j.URL
+	userData := j.UserData
+	networkData := j.NetworkData
 
-	archive := &v1alpha1.Archive{
+	cloudinit := &v1alpha1.CloudInit{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
-		Spec: v1alpha1.ArchiveSpec{
-			URL: url,
+		Spec: v1alpha1.CloudInitSpec{
+			UserData: userData,
+			NetworkData: networkData,
 		},
 	}
 
-	ret, err := berth.Clientset.Archives().Archives(namespace).Create(context.TODO(), archive, metav1.CreateOptions{})
+	ret, err := berth.Clientset.CloudInits().CloudInits(namespace).Create(context.TODO(), cloudinit, metav1.CreateOptions{})
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "error",
@@ -85,8 +88,8 @@ func CreateArchive(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func UpdateArchive(ctx *gin.Context) {
-	var j JsonArchiveRequest
+func UpdateCloudInit(ctx *gin.Context) {
+	var j JsonCloudInitRequest
 	if err := ctx.ShouldBindJSON(&j); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "request invalid",
@@ -96,8 +99,9 @@ func UpdateArchive(ctx *gin.Context) {
 
 	name := j.Name
 	namespace := "kubeberth"
-	url := j.URL
-	archive, err := berth.Clientset.Archives().Archives(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	userData := j.UserData
+	networkData := j.NetworkData
+	cloudinit, err := berth.Clientset.CloudInits().CloudInits(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -106,12 +110,13 @@ func UpdateArchive(ctx *gin.Context) {
 		return
 	}
 
-	spec := v1alpha1.ArchiveSpec{
-				URL: url,
+	spec := v1alpha1.CloudInitSpec{
+				UserData: userData,
+				NetworkData: networkData,
 			}
-	archive.Spec = spec
+	cloudinit.Spec = spec
 
-	ret, err := berth.Clientset.Archives().Archives(namespace).Update(context.TODO(), archive, metav1.UpdateOptions{})
+	ret, err := berth.Clientset.CloudInits().CloudInits(namespace).Update(context.TODO(), cloudinit, metav1.UpdateOptions{})
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "update error",
@@ -122,10 +127,10 @@ func UpdateArchive(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func DeleteArchive(ctx *gin.Context) {
+func DeleteCloudInit(ctx *gin.Context) {
 	name := ctx.Param("name")
 	namespace := "kubeberth"
-	err := berth.Clientset.Archives().Archives(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
+	err := berth.Clientset.CloudInits().CloudInits(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{

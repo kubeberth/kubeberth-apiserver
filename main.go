@@ -10,6 +10,7 @@ import (
 	clientset "github.com/kubeberth/berth-operator/pkg/clientset/versioned"
 	"github.com/kubeberth/berth-apiserver/pkg/berth"
 	"github.com/kubeberth/berth-apiserver/pkg/archives"
+	"github.com/kubeberth/berth-apiserver/pkg/cloudinits"
 	"github.com/kubeberth/berth-apiserver/pkg/healthz"
 )
 
@@ -40,6 +41,15 @@ func main() {
 	r.POST("/archives/",        archives.CreateArchive)
 	r.PUT("/archives/:name",    archives.UpdateArchive)
 	r.DELETE("/archives/:name", archives.DeleteArchive)
+
+	r.GET("/cloudinits",          cloudinits.GetAllCloudInits)
+	r.GET("/cloudinits/",         cloudinits.GetAllCloudInits)
+	r.GET("/cloudinits/:name",    cloudinits.GetCloudInit)
+	r.POST("/cloudinits",         cloudinits.CreateCloudInit)
+	r.POST("/cloudinits/",        cloudinits.CreateCloudInit)
+	r.PUT("/cloudinits/:name",    cloudinits.UpdateCloudInit)
+	r.DELETE("/cloudinits/:name", cloudinits.DeleteCloudInit)
+
 	r.GET("/healthz",           healthz.Healthz)
 	r.GET("/healthz/",          healthz.Healthz)
 

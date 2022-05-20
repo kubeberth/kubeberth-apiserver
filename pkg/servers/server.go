@@ -107,12 +107,6 @@ func CreateServer(ctx *gin.Context) {
 		},
 	}
 
-/*
-	ctx.JSON(http.StatusOK, gin.H{
-		"message": "ok",
-	})
-*/
-
 	ret, err := berth.Clientset.Servers().Servers(namespace).Create(context.TODO(), server, metav1.CreateOptions{})
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -125,22 +119,23 @@ func CreateServer(ctx *gin.Context) {
 }
 
 func UpdateServer(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{
-		"message": "ok",
-	})
-	/*
 	var j JsonServerRequest
 	if err := ctx.ShouldBindJSON(&j); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "request invalid",
+			"message": "request invalid koko",
 		})
 		return
 	}
 
 	name := j.Name
 	namespace := "kubeberth"
-	size := j.Size
-	archiveName := j.Source.Archive.Name
+	running := j.Running
+	cpu := resource.MustParse(j.CPU)
+	memory := resource.MustParse(j.Memory)
+	macAddress := j.MACAddress
+	hostname := j.HostName
+	disk := j.Disk.Name
+	cloudinit := j.CloudInit.Name
 	server, err := berth.Clientset.Servers().Servers(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
@@ -151,14 +146,20 @@ func UpdateServer(ctx *gin.Context) {
 	}
 
 	spec := v1alpha1.ServerSpec{
-				Size: size,
-				Source: &v1alpha1.ServerSource{
-					Archive: &v1alpha1.ServerSourceArchive{
-						Namespace: namespace,
-						Name: archiveName,
-					},
-				},
-			}
+			Running: &running,
+			CPU: &cpu,
+			Memory: &memory,
+			MACAddress: macAddress,
+			HostName: hostname,
+			Disk: &v1alpha1.DiskSourceDisk{
+				Namespace: namespace,
+				Name: disk,
+			},
+			CloudInit: &v1alpha1.CloudInitSource{
+				Namespace: namespace,
+				Name: cloudinit,
+			},
+		}
 	server.Spec = spec
 
 	ret, err := berth.Clientset.Servers().Servers(namespace).Update(context.TODO(), server, metav1.UpdateOptions{})
@@ -170,7 +171,6 @@ func UpdateServer(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, ret)
-	*/
 }
 
 func DeleteServer(ctx *gin.Context) {

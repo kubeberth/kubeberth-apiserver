@@ -36,6 +36,18 @@ rules:
   - patch
   - update
   - watch
+- apiGroups:
+  - berth.kubeberth.io
+  resources:
+  - disks
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 
 ---
 

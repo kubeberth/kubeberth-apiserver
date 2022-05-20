@@ -11,6 +11,7 @@ import (
 	"github.com/kubeberth/berth-apiserver/pkg/berth"
 	"github.com/kubeberth/berth-apiserver/pkg/archives"
 	"github.com/kubeberth/berth-apiserver/pkg/cloudinits"
+	"github.com/kubeberth/berth-apiserver/pkg/disks"
 	"github.com/kubeberth/berth-apiserver/pkg/healthz"
 )
 
@@ -49,6 +50,14 @@ func main() {
 	r.POST("/cloudinits/",        cloudinits.CreateCloudInit)
 	r.PUT("/cloudinits/:name",    cloudinits.UpdateCloudInit)
 	r.DELETE("/cloudinits/:name", cloudinits.DeleteCloudInit)
+
+	r.GET("/disks",          disks.GetAllDisks)
+	r.GET("/disks/",         disks.GetAllDisks)
+	r.GET("/disks/:name",    disks.GetDisk)
+	r.POST("/disks",         disks.CreateDisk)
+	r.POST("/disks/",        disks.CreateDisk)
+	r.PUT("/disks/:name",    disks.UpdateDisk)
+	r.DELETE("/disks/:name", disks.DeleteDisk)
 
 	r.GET("/healthz",           healthz.Healthz)
 	r.GET("/healthz/",          healthz.Healthz)

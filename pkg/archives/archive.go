@@ -12,9 +12,18 @@ import (
 	"github.com/kubeberth/berth-apiserver/pkg/berth"
 )
 
-type JsonArchiveRequest struct {
+type Archive struct {
 	Name string `json:"name"`
 	URL string `json:"url"`
+}
+
+func convertArchive2Archive(archive v1alpha1.Archive) *Archive {
+	ret := &Archive{
+		Name: archive.ObjectMeta.Name,
+		URL: archive.Spec.URL,
+	}
+
+	return ret
 }
 
 func GetAllArchives(ctx *gin.Context) {
@@ -28,9 +37,9 @@ func GetAllArchives(ctx *gin.Context) {
 		return
 	}
 
-	var ret []v1alpha1.Archive
+	var ret []*Archive
 	for _, archive := range archives.Items {
-		ret = append(ret, archive)
+		ret = append(ret, convertArchive2Archive(archive))
 	}
 
 	ctx.JSON(http.StatusOK, ret)
@@ -39,7 +48,7 @@ func GetAllArchives(ctx *gin.Context) {
 func GetArchive(ctx *gin.Context) {
 	name := ctx.Param("name")
 	namespace := "kubeberth"
-	ret, err := berth.Clientset.Archives().Archives(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	archive, err := berth.Clientset.Archives().Archives(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -48,21 +57,21 @@ func GetArchive(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, ret)
+	ctx.JSON(http.StatusOK, convertArchive2Archive(*archive))
 }
 
 func CreateArchive(ctx *gin.Context) {
-	var j JsonArchiveRequest
-	if err := ctx.ShouldBindJSON(&j); err != nil {
+	var a Archive
+	if err := ctx.ShouldBindJSON(&a); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "request invalid",
 		})
 		return
 	}
 
-	name := j.Name
+	name := a.Name
 	namespace := "kubeberth"
-	url := j.URL
+	url := a.URL
 
 	archive := &v1alpha1.Archive{
 		ObjectMeta: metav1.ObjectMeta{
@@ -82,21 +91,21 @@ func CreateArchive(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, ret)
+	ctx.JSON(http.StatusOK, convertArchive2Archive(*ret))
 }
 
 func UpdateArchive(ctx *gin.Context) {
-	var j JsonArchiveRequest
-	if err := ctx.ShouldBindJSON(&j); err != nil {
+	var a Archive
+	if err := ctx.ShouldBindJSON(&a); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "request invalid",
 		})
 		return
 	}
 
-	name := j.Name
+	name := a.Name
 	namespace := "kubeberth"
-	url := j.URL
+	url := a.URL
 	archive, err := berth.Clientset.Archives().Archives(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
@@ -119,7 +128,7 @@ func UpdateArchive(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, ret)
+	ctx.JSON(http.StatusOK, convertArchive2Archive(*ret))
 }
 
 func DeleteArchive(ctx *gin.Context) {

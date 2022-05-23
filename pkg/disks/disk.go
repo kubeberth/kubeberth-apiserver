@@ -12,24 +12,45 @@ import (
 	"github.com/kubeberth/berth-apiserver/pkg/berth"
 )
 
-type JsonDiskSourceArchiveRequest struct {
+type DiskSourceArchive struct {
 	Name string `json:"name"`
 }
 
-type JsonDiskSourceDiskRequest struct {
+type DiskSourceDisk struct {
 	Name string `json:"name"`
 }
 
-type JsonDiskSourceRequest struct {
-	Archive JsonDiskSourceArchiveRequest `json:"archive"`
-	Disk JsonDiskSourceDiskRequest `json:"disk"`
+type DiskSource struct {
+	Archive *DiskSourceArchive `json:"archive,omitempty"`
+	Disk *DiskSourceDisk `json:"disk,omitempty"`
 }
 
-type JsonDiskRequest struct {
+type Disk struct {
 	Name string `json:"name"`
 	Size string `json:"size"`
-	Source JsonDiskSourceRequest `json:"source"`
-	//Source JsonDiskSourceRequest `json:"source" binding:"dive"`
+	Source *DiskSource `json:"source"`
+}
+
+func convertDisk2Disk(disk v1alpha1.Disk) *Disk {
+	ret := &Disk{
+		Name: disk.ObjectMeta.Name,
+		Size: disk.Spec.Size,
+		Source: &DiskSource{},
+	}
+
+	if disk.Spec.Source.Archive != nil {
+		ret.Source.Archive = &DiskSourceArchive{
+			Name: disk.Spec.Source.Archive.Name,
+		}
+	}
+
+	if disk.Spec.Source.Disk != nil {
+		ret.Source.Disk = &DiskSourceDisk{
+			Name: disk.Spec.Source.Disk.Name,
+		}
+	}
+
+	return ret
 }
 
 func GetAllDisks(ctx *gin.Context) {
@@ -43,9 +64,9 @@ func GetAllDisks(ctx *gin.Context) {
 		return
 	}
 
-	var ret []v1alpha1.Disk
+	var ret []*Disk
 	for _, disk := range disks.Items {
-		ret = append(ret, disk)
+		ret = append(ret, convertDisk2Disk(disk))
 	}
 
 	ctx.JSON(http.StatusOK, ret)
@@ -54,7 +75,7 @@ func GetAllDisks(ctx *gin.Context) {
 func GetDisk(ctx *gin.Context) {
 	name := ctx.Param("name")
 	namespace := "kubeberth"
-	ret, err := berth.Clientset.Disks().Disks(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	disk, err := berth.Clientset.Disks().Disks(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -63,22 +84,22 @@ func GetDisk(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, ret)
+	ctx.JSON(http.StatusOK, convertDisk2Disk(*disk))
 }
 
 func CreateDisk(ctx *gin.Context) {
-	var j JsonDiskRequest
-	if err := ctx.ShouldBindJSON(&j); err != nil {
+	var d Disk
+	if err := ctx.ShouldBindJSON(&d); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "request invalid koko",
 		})
 		return
 	}
 
-	name := j.Name
+	name := d.Name
 	namespace := "kubeberth"
-	size := j.Size
-	archiveName := j.Source.Archive.Name
+	size := d.Size
+	archiveName := d.Source.Archive.Name
 
 	disk := &v1alpha1.Disk{
 		ObjectMeta: metav1.ObjectMeta{
@@ -104,22 +125,22 @@ func CreateDisk(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, ret)
+	ctx.JSON(http.StatusCreated, convertDisk2Disk(*ret))
 }
 
 func UpdateDisk(ctx *gin.Context) {
-	var j JsonDiskRequest
-	if err := ctx.ShouldBindJSON(&j); err != nil {
+	var d Disk
+	if err := ctx.ShouldBindJSON(&d); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "request invalid",
 		})
 		return
 	}
 
-	name := j.Name
+	name := d.Name
 	namespace := "kubeberth"
-	size := j.Size
-	archiveName := j.Source.Archive.Name
+	size := d.Size
+	archiveName := d.Source.Archive.Name
 	disk, err := berth.Clientset.Disks().Disks(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
@@ -148,7 +169,7 @@ func UpdateDisk(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, ret)
+	ctx.JSON(http.StatusCreated, convertDisk2Disk(*ret))
 }
 
 func DeleteDisk(ctx *gin.Context) {

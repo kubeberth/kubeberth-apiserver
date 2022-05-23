@@ -3,6 +3,7 @@ package servers
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -14,23 +15,42 @@ import (
 	"github.com/kubeberth/berth-apiserver/pkg/berth"
 )
 
-type JsonDiskSource struct {
+type DiskSource struct {
 	Name string `json:"name"`
 }
 
-type JsonCloudInitSource struct {
+type CloudInitSource struct {
 	Name string `json:"name"`
 }
 
-type JsonServerRequest struct {
+type Server struct {
 	Name string `json:"name"`
-	Running bool `json:"running"`
+	Running string `json:"running"`
 	CPU string `json:"cpu"`
 	Memory string `json:"memory"`
 	MACAddress string `json:"macAddress"`
 	HostName string `json:"hostname"`
-	Disk JsonDiskSource `json:"disk"`
-	CloudInit JsonCloudInitSource `json:"cloudinit"`
+	Disk *DiskSource `json:"disk"`
+	CloudInit *CloudInitSource `json:"cloudinit"`
+}
+
+func convertServer2Server(server v1alpha1.Server) *Server {
+	ret := &Server{
+		Name: server.ObjectMeta.Name,
+		Running: strconv.FormatBool(*server.Spec.Running),
+		CPU: server.Spec.CPU.String(),
+		Memory: server.Spec.Memory.String(),
+		MACAddress: server.Spec.MACAddress,
+		HostName: server.Spec.HostName,
+		Disk: &DiskSource{
+			Name: server.Spec.Disk.Name,
+		},
+		CloudInit: &CloudInitSource{
+			Name: server.Spec.CloudInit.Name,
+		},
+	}
+
+	return ret
 }
 
 func GetAllServers(ctx *gin.Context) {
@@ -44,9 +64,9 @@ func GetAllServers(ctx *gin.Context) {
 		return
 	}
 
-	var ret []v1alpha1.Server
+	var ret []*Server
 	for _, server := range servers.Items {
-		ret = append(ret, server)
+		ret = append(ret, convertServer2Server(server))
 	}
 
 	ctx.JSON(http.StatusOK, ret)
@@ -55,7 +75,7 @@ func GetAllServers(ctx *gin.Context) {
 func GetServer(ctx *gin.Context) {
 	name := ctx.Param("name")
 	namespace := "kubeberth"
-	ret, err := berth.Clientset.Servers().Servers(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	server, err := berth.Clientset.Servers().Servers(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -64,27 +84,27 @@ func GetServer(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, ret)
+	ctx.JSON(http.StatusOK, convertServer2Server(*server))
 }
 
 func CreateServer(ctx *gin.Context) {
-	var j JsonServerRequest
-	if err := ctx.ShouldBindJSON(&j); err != nil {
+	var s Server
+	if err := ctx.ShouldBindJSON(&s); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "request invalid koko",
+			"message": "request invalid",
 		})
 		return
 	}
 
-	name := j.Name
+	name := s.Name
 	namespace := "kubeberth"
-	running := j.Running
-	cpu := resource.MustParse(j.CPU)
-	memory := resource.MustParse(j.Memory)
-	macAddress := j.MACAddress
-	hostname := j.HostName
-	disk := j.Disk.Name
-	cloudinit := j.CloudInit.Name
+	running, _ := strconv.ParseBool(s.Running)
+	cpu := resource.MustParse(s.CPU)
+	memory := resource.MustParse(s.Memory)
+	macAddress := s.MACAddress
+	hostname := s.HostName
+	disk := s.Disk.Name
+	cloudinit := s.CloudInit.Name
 	server := &v1alpha1.Server{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -115,27 +135,27 @@ func CreateServer(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, ret)
+	ctx.JSON(http.StatusCreated, convertServer2Server(*ret))
 }
 
 func UpdateServer(ctx *gin.Context) {
-	var j JsonServerRequest
-	if err := ctx.ShouldBindJSON(&j); err != nil {
+	var s Server
+	if err := ctx.ShouldBindJSON(&s); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "request invalid koko",
+			"message": "request invalid",
 		})
 		return
 	}
 
-	name := j.Name
+	name := s.Name
 	namespace := "kubeberth"
-	running := j.Running
-	cpu := resource.MustParse(j.CPU)
-	memory := resource.MustParse(j.Memory)
-	macAddress := j.MACAddress
-	hostname := j.HostName
-	disk := j.Disk.Name
-	cloudinit := j.CloudInit.Name
+	running, _ := strconv.ParseBool(s.Running)
+	cpu := resource.MustParse(s.CPU)
+	memory := resource.MustParse(s.Memory)
+	macAddress := s.MACAddress
+	hostname := s.HostName
+	disk := s.Disk.Name
+	cloudinit := s.CloudInit.Name
 	server, err := berth.Clientset.Servers().Servers(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
@@ -170,7 +190,7 @@ func UpdateServer(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, ret)
+	ctx.JSON(http.StatusCreated, convertServer2Server(*ret))
 }
 
 func DeleteServer(ctx *gin.Context) {

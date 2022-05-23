@@ -12,10 +12,26 @@ import (
 	"github.com/kubeberth/berth-apiserver/pkg/berth"
 )
 
-type JsonCloudInitRequest struct {
+type CloudInit struct {
 	Name string `json:"name"`
-	UserData string `json:"userData"`
-	NetworkData string `json:"networkData"`
+	UserData string `json:"userData,omitempty"`
+	NetworkData string `json:"networkData,omitempty"`
+}
+
+func convertCloudInit2CloudInit(cloudinit v1alpha1.CloudInit) *CloudInit {
+	ret := &CloudInit{
+		Name: cloudinit.ObjectMeta.Name,
+	}
+
+	if cloudinit.Spec.UserData != "" {
+		ret.UserData = cloudinit.Spec.UserData
+	}
+
+	if cloudinit.Spec.NetworkData != "" {
+		ret.NetworkData = cloudinit.Spec.NetworkData
+	}
+
+	return ret
 }
 
 func GetAllCloudInits(ctx *gin.Context) {
@@ -29,9 +45,9 @@ func GetAllCloudInits(ctx *gin.Context) {
 		return
 	}
 
-	var ret []v1alpha1.CloudInit
+	var ret []*CloudInit
 	for _, cloudinit := range cloudinits.Items {
-		ret = append(ret, cloudinit)
+		ret = append(ret, convertCloudInit2CloudInit(cloudinit))
 	}
 
 	ctx.JSON(http.StatusOK, ret)
@@ -40,7 +56,7 @@ func GetAllCloudInits(ctx *gin.Context) {
 func GetCloudInit(ctx *gin.Context) {
 	name := ctx.Param("name")
 	namespace := "kubeberth"
-	ret, err := berth.Clientset.CloudInits().CloudInits(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	cloudinit, err := berth.Clientset.CloudInits().CloudInits(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -49,22 +65,22 @@ func GetCloudInit(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, ret)
+	ctx.JSON(http.StatusOK, convertCloudInit2CloudInit(*cloudinit))
 }
 
 func CreateCloudInit(ctx *gin.Context) {
-	var j JsonCloudInitRequest
-	if err := ctx.ShouldBindJSON(&j); err != nil {
+	var c CloudInit
+	if err := ctx.ShouldBindJSON(&c); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "request invalid",
 		})
 		return
 	}
 
-	name := j.Name
+	name := c.Name
 	namespace := "kubeberth"
-	userData := j.UserData
-	networkData := j.NetworkData
+	userData := c.UserData
+	networkData := c.NetworkData
 
 	cloudinit := &v1alpha1.CloudInit{
 		ObjectMeta: metav1.ObjectMeta{
@@ -85,22 +101,22 @@ func CreateCloudInit(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, ret)
+	ctx.JSON(http.StatusOK, convertCloudInit2CloudInit(*ret))
 }
 
 func UpdateCloudInit(ctx *gin.Context) {
-	var j JsonCloudInitRequest
-	if err := ctx.ShouldBindJSON(&j); err != nil {
+	var c CloudInit
+	if err := ctx.ShouldBindJSON(&c); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "request invalid",
 		})
 		return
 	}
 
-	name := j.Name
+	name := c.Name
 	namespace := "kubeberth"
-	userData := j.UserData
-	networkData := j.NetworkData
+	userData := c.UserData
+	networkData := c.NetworkData
 	cloudinit, err := berth.Clientset.CloudInits().CloudInits(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
@@ -124,7 +140,7 @@ func UpdateCloudInit(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, ret)
+	ctx.JSON(http.StatusOK, convertCloudInit2CloudInit(*ret))
 }
 
 func DeleteCloudInit(ctx *gin.Context) {

@@ -15,37 +15,29 @@ import (
 	"github.com/kubeberth/berth-apiserver/pkg/berth"
 )
 
-type DiskSource struct {
-	Name string `json:"name"`
-}
-
-type CloudInitSource struct {
-	Name string `json:"name"`
-}
-
 type Server struct {
-	Name string `json:"name"`
-	Running string `json:"running"`
-	CPU string `json:"cpu"`
-	Memory string `json:"memory"`
+	Name       string `json:"name"`
+	Running    string `json:"running"`
+	CPU        string `json:"cpu"`
+	Memory     string `json:"memory"`
 	MACAddress string `json:"macAddress"`
-	HostName string `json:"hostname"`
-	Disk *DiskSource `json:"disk"`
-	CloudInit *CloudInitSource `json:"cloudinit"`
+	HostName   string `json:"hostname"`
+	Disk       *berth.AttachedDisk      `json:"disk"`
+	CloudInit  *berth.AttachedCloudInit `json:"cloudinit"`
 }
 
 func convertServer2Server(server v1alpha1.Server) *Server {
 	ret := &Server{
-		Name: server.ObjectMeta.Name,
-		Running: strconv.FormatBool(*server.Spec.Running),
-		CPU: server.Spec.CPU.String(),
-		Memory: server.Spec.Memory.String(),
+		Name:       server.ObjectMeta.Name,
+		Running:    strconv.FormatBool(*server.Spec.Running),
+		CPU:        server.Spec.CPU.String(),
+		Memory:     server.Spec.Memory.String(),
 		MACAddress: server.Spec.MACAddress,
-		HostName: server.Spec.HostName,
-		Disk: &DiskSource{
+		HostName:   server.Spec.HostName,
+		Disk: &berth.AttachedDisk{
 			Name: server.Spec.Disk.Name,
 		},
-		CloudInit: &CloudInitSource{
+		CloudInit: &berth.AttachedCloudInit{
 			Name: server.Spec.CloudInit.Name,
 		},
 	}

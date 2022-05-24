@@ -12,40 +12,27 @@ import (
 	"github.com/kubeberth/berth-apiserver/pkg/berth"
 )
 
-type DiskSourceArchive struct {
-	Name string `json:"name"`
-}
-
-type DiskSourceDisk struct {
-	Name string `json:"name"`
-}
-
-type DiskSource struct {
-	Archive *DiskSourceArchive `json:"archive,omitempty"`
-	Disk *DiskSourceDisk `json:"disk,omitempty"`
-}
-
 type Disk struct {
 	Name string `json:"name"`
 	Size string `json:"size"`
-	Source *DiskSource `json:"source"`
+	Source *berth.AttachedSource `json:"source"`
 }
 
 func convertDisk2Disk(disk v1alpha1.Disk) *Disk {
 	ret := &Disk{
 		Name: disk.ObjectMeta.Name,
 		Size: disk.Spec.Size,
-		Source: &DiskSource{},
+		Source: &berth.AttachedSource{},
 	}
 
 	if disk.Spec.Source.Archive != nil {
-		ret.Source.Archive = &DiskSourceArchive{
+		ret.Source.Archive = &berth.AttachedArchive{
 			Name: disk.Spec.Source.Archive.Name,
 		}
 	}
 
 	if disk.Spec.Source.Disk != nil {
-		ret.Source.Disk = &DiskSourceDisk{
+		ret.Source.Disk = &berth.AttachedDisk{
 			Name: disk.Spec.Source.Disk.Name,
 		}
 	}

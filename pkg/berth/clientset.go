@@ -1,7 +1,7 @@
 package berth
 
 import (
-	clientset "github.com/kubeberth/berth-operator/pkg/clientset/versioned"
+	clientset "github.com/kubeberth/kubeberth-operator/pkg/clientset/versioned"
 )
 
 var (

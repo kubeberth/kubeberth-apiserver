@@ -7,13 +7,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	clientset "github.com/kubeberth/berth-operator/pkg/clientset/versioned"
-	"github.com/kubeberth/berth-apiserver/pkg/berth"
-	"github.com/kubeberth/berth-apiserver/pkg/archives"
-	"github.com/kubeberth/berth-apiserver/pkg/cloudinits"
-	"github.com/kubeberth/berth-apiserver/pkg/disks"
-	"github.com/kubeberth/berth-apiserver/pkg/servers"
-	"github.com/kubeberth/berth-apiserver/pkg/healthz"
+	clientset "github.com/kubeberth/kubeberth-operator/pkg/clientset/versioned"
+	"github.com/kubeberth/kubeberth-apiserver/pkg/berth"
+	"github.com/kubeberth/kubeberth-apiserver/pkg/archives"
+	"github.com/kubeberth/kubeberth-apiserver/pkg/cloudinits"
+	"github.com/kubeberth/kubeberth-apiserver/pkg/disks"
+	"github.com/kubeberth/kubeberth-apiserver/pkg/servers"
+	"github.com/kubeberth/kubeberth-apiserver/pkg/healthz"
 )
 
 func main() {

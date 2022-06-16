@@ -1,10 +1,10 @@
-module github.com/kubeberth/berth-apiserver
+module github.com/kubeberth/kubeberth-apiserver
 
 go 1.17
 
 require (
 	github.com/gin-gonic/gin v1.7.7
-	github.com/kubeberth/berth-operator v0.5.2
+	github.com/kubeberth/kubeberth-operator v0.6.0
 	k8s.io/apimachinery v0.24.0
 	k8s.io/client-go v0.24.0
 	k8s.io/klog/v2 v2.60.1

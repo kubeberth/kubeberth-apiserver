@@ -10,9 +10,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/kubeberth/berth-operator/api/v1alpha1"
+	"github.com/kubeberth/kubeberth-operator/api/v1alpha1"
 
-	"github.com/kubeberth/berth-apiserver/pkg/berth"
+	"github.com/kubeberth/kubeberth-apiserver/pkg/berth"
 )
 
 type Server struct {

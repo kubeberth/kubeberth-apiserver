@@ -3,47 +3,14 @@
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: berth-apiserver
+  name: kubeberth-apiserver
 rules:
 - apiGroups:
   - berth.kubeberth.io
   resources:
   - archives
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - berth.kubeberth.io
-  resources:
   - cloudinits
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - berth.kubeberth.io
-  resources:
   - disks
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - berth.kubeberth.io
-  resources:
   - servers
   verbs:
   - create
@@ -59,7 +26,7 @@ rules:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: berth-apiserver
+  name: kubeberth-apiserver
   namespace: kubeberth-system
 
 ---
@@ -67,14 +34,14 @@ metadata:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: berth-apiserver
+  name: kubeberth-apiserver
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: berth-apiserver
+  name: kubeberth-apiserver
 subjects:
 - kind: ServiceAccount
-  name: berth-apiserver
+  name: kubeberth-apiserver
   namespace: kubeberth-system
 
 ---
@@ -82,28 +49,27 @@ subjects:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: berth-apiserver
+  name: kubeberth-apiserver
   namespace: kubeberth-system
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: berth-apiserver
+      app: kubeberth-apiserver
   template:
     metadata:
       labels:
-        app: berth-apiserver
+        app: kubeberth-apiserver
     spec:
-      serviceAccountName: berth-apiserver
+      serviceAccountName: kubeberth-apiserver
       securityContext:
         runAsNonRoot: true
       containers:
-      - name: berth-apiserver
-        image: kubeberth/berth-apiserver:v1alpha1
+      - name: kubeberth-apiserver
+        image: kubeberth/kubeberth-apiserver:v1alpha1
         imagePullPolicy: Always
         ports:
         - containerPort: 2022
-          name: berth-apiserver
           protocol: TCP
 
 ---
@@ -111,7 +77,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: berth-apiserver
+  name: kubeberth-apiserver
   namespace: kubeberth-system
   annotations:
     external-dns.alpha.kubernetes.io/hostname: api.kubeberth.k8s.arpa
@@ -119,11 +85,11 @@ spec:
   type: LoadBalancer
   externalTrafficPolicy: Local
   ports:
-  - name: berth-apiserver
+  - name: kubeberth-apiserver
     protocol: TCP
     port: 80
     targetPort: 2022
   selector:
-    app: berth-apiserver
+    app: kubeberth-apiserver
 
 ---

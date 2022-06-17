@@ -95,8 +95,8 @@ func CreateDisk(ctx *gin.Context) {
 		},
 		Spec: v1alpha1.DiskSpec{
 			Size: size,
-			Source: &v1alpha1.DiskSource{
-				Archive: &v1alpha1.DiskSourceArchive{
+			Source: &v1alpha1.AttachedSource{
+				Archive: &v1alpha1.AttachedArchive{
 					Namespace: namespace,
 					Name: archiveName,
 				},
@@ -139,8 +139,8 @@ func UpdateDisk(ctx *gin.Context) {
 
 	spec := v1alpha1.DiskSpec{
 				Size: size,
-				Source: &v1alpha1.DiskSource{
-					Archive: &v1alpha1.DiskSourceArchive{
+				Source: &v1alpha1.AttachedSource{
+					Archive: &v1alpha1.AttachedArchive{
 						Namespace: namespace,
 						Name: archiveName,
 					},

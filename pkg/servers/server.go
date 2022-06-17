@@ -21,7 +21,7 @@ type Server struct {
 	CPU        string `json:"cpu"`
 	Memory     string `json:"memory"`
 	MACAddress string `json:"macAddress"`
-	HostName   string `json:"hostname"`
+	Hostname   string `json:"hostname"`
 	Disk       *berth.AttachedDisk      `json:"disk"`
 	CloudInit  *berth.AttachedCloudInit `json:"cloudinit"`
 }
@@ -33,7 +33,7 @@ func convertServer2Server(server v1alpha1.Server) *Server {
 		CPU:        server.Spec.CPU.String(),
 		Memory:     server.Spec.Memory.String(),
 		MACAddress: server.Spec.MACAddress,
-		HostName:   server.Spec.HostName,
+		Hostname:   server.Spec.Hostname,
 		Disk: &berth.AttachedDisk{
 			Name: server.Spec.Disk.Name,
 		},
@@ -94,7 +94,7 @@ func CreateServer(ctx *gin.Context) {
 	cpu := resource.MustParse(s.CPU)
 	memory := resource.MustParse(s.Memory)
 	macAddress := s.MACAddress
-	hostname := s.HostName
+	hostname := s.Hostname
 	disk := s.Disk.Name
 	cloudinit := s.CloudInit.Name
 	server := &v1alpha1.Server{
@@ -107,12 +107,12 @@ func CreateServer(ctx *gin.Context) {
 			CPU: &cpu,
 			Memory: &memory,
 			MACAddress: macAddress,
-			HostName: hostname,
-			Disk: &v1alpha1.DiskSourceDisk{
+			Hostname: hostname,
+			Disk: &v1alpha1.AttachedDisk{
 				Namespace: namespace,
 				Name: disk,
 			},
-			CloudInit: &v1alpha1.CloudInitSource{
+			CloudInit: &v1alpha1.AttachedCloudInit{
 				Namespace: namespace,
 				Name: cloudinit,
 			},
@@ -145,7 +145,7 @@ func UpdateServer(ctx *gin.Context) {
 	cpu := resource.MustParse(s.CPU)
 	memory := resource.MustParse(s.Memory)
 	macAddress := s.MACAddress
-	hostname := s.HostName
+	hostname := s.Hostname
 	disk := s.Disk.Name
 	cloudinit := s.CloudInit.Name
 	server, err := berth.Clientset.Servers().Servers(namespace).Get(context.TODO(), name, metav1.GetOptions{})
@@ -162,12 +162,12 @@ func UpdateServer(ctx *gin.Context) {
 			CPU: &cpu,
 			Memory: &memory,
 			MACAddress: macAddress,
-			HostName: hostname,
-			Disk: &v1alpha1.DiskSourceDisk{
+			Hostname: hostname,
+			Disk: &v1alpha1.AttachedDisk{
 				Namespace: namespace,
 				Name: disk,
 			},
-			CloudInit: &v1alpha1.CloudInitSource{
+			CloudInit: &v1alpha1.AttachedCloudInit{
 				Namespace: namespace,
 				Name: cloudinit,
 			},

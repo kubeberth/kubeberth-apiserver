@@ -1,8 +1,8 @@
-IMG ?= kubeberth/berth-apiserver:v1alpha1
+IMG ?= kubeberth/kubeberth-apiserver:v1alpha1
 
 .PHONY: build
 build:
-	go build -o bin/berth-apiserver main.go
+	go build -o bin/kubeberth-apiserver main.go
 
 .PHONY: run
 run:

@@ -1,4 +1,4 @@
-package berth
+package client
 
 import (
 	clientset "github.com/kubeberth/kubeberth-operator/pkg/clientset/versioned"

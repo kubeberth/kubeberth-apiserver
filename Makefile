@@ -18,7 +18,7 @@ undeploy:
 
 .PHONY: docker-build
 docker-build:
-	docker build . -t ${IMG}
+	docker build --no-cache -t ${IMG} .
 
 .PHONY: docker-push
 docker-push:
@@ -26,4 +26,4 @@ docker-push:
 
 .PHONY: docker-buildx
 docker-buildx:
-	docker buildx build --platform linux/amd64,linux/arm64 -t ${IMG} --push .
+	docker buildx build --no-cache --platform linux/amd64,linux/arm64 -t ${IMG} --push .

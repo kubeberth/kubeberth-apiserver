@@ -4,23 +4,22 @@ import (
 	"context"
 	"net/http"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"github.com/gin-gonic/gin"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/kubeberth/kubeberth-apiserver/pkg/client"
 	"github.com/kubeberth/kubeberth-operator/api/v1alpha1"
-
-	"github.com/kubeberth/kubeberth-apiserver/pkg/berth"
 )
 
 type Archive struct {
 	Name string `json:"name"`
-	URL string `json:"url"`
+	URL  string `json:"url"`
 }
 
 func convertArchive2Archive(archive v1alpha1.Archive) *Archive {
 	ret := &Archive{
 		Name: archive.ObjectMeta.Name,
-		URL: archive.Spec.URL,
+		URL:  archive.Spec.URL,
 	}
 
 	return ret
@@ -28,7 +27,7 @@ func convertArchive2Archive(archive v1alpha1.Archive) *Archive {
 
 func GetAllArchives(ctx *gin.Context) {
 	namespace := "kubeberth"
-	archives, err := berth.Clientset.Archives().Archives(namespace).List(context.TODO(), metav1.ListOptions{})
+	archives, err := client.Clientset.Archives().Archives(namespace).List(context.TODO(), metav1.ListOptions{})
 
 	if err != nil || len(archives.Items) == 0 {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -48,7 +47,7 @@ func GetAllArchives(ctx *gin.Context) {
 func GetArchive(ctx *gin.Context) {
 	name := ctx.Param("name")
 	namespace := "kubeberth"
-	archive, err := berth.Clientset.Archives().Archives(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	archive, err := client.Clientset.Archives().Archives(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -83,7 +82,7 @@ func CreateArchive(ctx *gin.Context) {
 		},
 	}
 
-	ret, err := berth.Clientset.Archives().Archives(namespace).Create(context.TODO(), archive, metav1.CreateOptions{})
+	ret, err := client.Clientset.Archives().Archives(namespace).Create(context.TODO(), archive, metav1.CreateOptions{})
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "error",
@@ -106,7 +105,7 @@ func UpdateArchive(ctx *gin.Context) {
 	name := a.Name
 	namespace := "kubeberth"
 	url := a.URL
-	archive, err := berth.Clientset.Archives().Archives(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	archive, err := client.Clientset.Archives().Archives(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -116,11 +115,12 @@ func UpdateArchive(ctx *gin.Context) {
 	}
 
 	spec := v1alpha1.ArchiveSpec{
-				URL: url,
-			}
+		URL: url,
+	}
+
 	archive.Spec = spec
 
-	ret, err := berth.Clientset.Archives().Archives(namespace).Update(context.TODO(), archive, metav1.UpdateOptions{})
+	ret, err := client.Clientset.Archives().Archives(namespace).Update(context.TODO(), archive, metav1.UpdateOptions{})
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "update error",
@@ -134,7 +134,7 @@ func UpdateArchive(ctx *gin.Context) {
 func DeleteArchive(ctx *gin.Context) {
 	name := ctx.Param("name")
 	namespace := "kubeberth"
-	err := berth.Clientset.Archives().Archives(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
+	err := client.Clientset.Archives().Archives(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{

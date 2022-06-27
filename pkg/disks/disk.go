@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/kubeberth/kubeberth-apiserver/pkg/berth"
 	"github.com/kubeberth/kubeberth-apiserver/pkg/client"
 	"github.com/kubeberth/kubeberth-operator/api/v1alpha1"
 )
@@ -14,25 +15,25 @@ import (
 type Disk struct {
 	Name   string                   `json:"name"`
 	Size   string                   `json:"size"`
-	Source *v1alpha1.AttachedSource `json:"source"`
+	Source *berth.AttachedSource `json:"source"`
 }
 
 func convertDisk2Disk(disk v1alpha1.Disk) *Disk {
 	ret := &Disk{
 		Name:   disk.ObjectMeta.Name,
 		Size:   disk.Spec.Size,
-		Source: &v1alpha1.AttachedSource{},
+		Source: &berth.AttachedSource{},
 	}
 
 	if disk.Spec.Source != nil {
 		if disk.Spec.Source.Archive != nil {
-			ret.Source.Archive = &v1alpha1.AttachedArchive{
+			ret.Source.Archive = &berth.AttachedArchive{
 				Name: disk.Spec.Source.Archive.Name,
 			}
 		}
 
 		if disk.Spec.Source.Disk != nil {
-			ret.Source.Disk = &v1alpha1.AttachedDisk{
+			ret.Source.Disk = &berth.AttachedDisk{
 				Name: disk.Spec.Source.Disk.Name,
 			}
 		}
@@ -87,19 +88,19 @@ func CreateDisk(ctx *gin.Context) {
 	name := d.Name
 	namespace := "kubeberth"
 	size := d.Size
-	var source *v1alpha1.AttachedSource
+	var source *berth.AttachedSource
 
 	if d.Source != nil {
-		source = &v1alpha1.AttachedSource{}
+		source = &berth.AttachedSource{}
 
 		if d.Source.Archive != nil {
-			source.Archive = &v1alpha1.AttachedArchive{
+			source.Archive = &berth.AttachedArchive{
 				Name: d.Source.Archive.Name,
 			}
 		}
 
 		if d.Source.Disk != nil {
-			source.Disk = &v1alpha1.AttachedDisk{
+			source.Disk = &berth.AttachedDisk{
 				Name: d.Source.Disk.Name,
 			}
 		}
@@ -151,8 +152,8 @@ func UpdateDisk(ctx *gin.Context) {
 
 	spec := v1alpha1.DiskSpec{
 		Size: size,
-		Source: &v1alpha1.AttachedSource{
-			Archive: &v1alpha1.AttachedArchive{
+		Source: &berth.AttachedSource{
+			Archive: &berth.AttachedArchive{
 				Name: archiveName,
 			},
 		},

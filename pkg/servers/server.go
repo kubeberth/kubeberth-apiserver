@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/kubeberth/kubeberth-apiserver/pkg/berth"
 	"github.com/kubeberth/kubeberth-apiserver/pkg/client"
 	"github.com/kubeberth/kubeberth-operator/api/v1alpha1"
 )
@@ -21,8 +22,8 @@ type Server struct {
 	MACAddress string                      `json:"mac_address"`
 	Hostname   string                      `json:"hostname"`
 	Hosting    string                      `json:"hosting"`
-	Disk       *v1alpha1.AttachedDisk      `json:"disk"`
-	CloudInit  *v1alpha1.AttachedCloudInit `json:"cloudinit"`
+	Disk       *berth.AttachedDisk      `json:"disk"`
+	CloudInit  *berth.AttachedCloudInit `json:"cloudinit"`
 }
 
 func convertServer2Server(server v1alpha1.Server) *Server {
@@ -34,10 +35,10 @@ func convertServer2Server(server v1alpha1.Server) *Server {
 		MACAddress: server.Spec.MACAddress,
 		Hostname:   server.Spec.Hostname,
 		Hosting:    server.Spec.Hosting,
-		Disk: &v1alpha1.AttachedDisk{
+		Disk: &berth.AttachedDisk{
 			Name: server.Spec.Disk.Name,
 		},
-		CloudInit: &v1alpha1.AttachedCloudInit{
+		CloudInit: &berth.AttachedCloudInit{
 			Name: server.Spec.CloudInit.Name,
 		},
 	}
@@ -111,10 +112,10 @@ func CreateServer(ctx *gin.Context) {
 			MACAddress: macAddress,
 			Hostname:   hostname,
 			Hosting:    hosting,
-			Disk: &v1alpha1.AttachedDisk{
+			Disk: &berth.AttachedDisk{
 				Name: disk,
 			},
-			CloudInit: &v1alpha1.AttachedCloudInit{
+			CloudInit: &berth.AttachedCloudInit{
 				Name: cloudinit,
 			},
 		},
@@ -167,10 +168,10 @@ func UpdateServer(ctx *gin.Context) {
 		MACAddress: macAddress,
 		Hostname:   hostname,
 		Hosting:    hosting,
-		Disk: &v1alpha1.AttachedDisk{
+		Disk: &berth.AttachedDisk{
 			Name: disk,
 		},
-		CloudInit: &v1alpha1.AttachedCloudInit{
+		CloudInit: &berth.AttachedCloudInit{
 			Name: cloudinit,
 		},
 	}

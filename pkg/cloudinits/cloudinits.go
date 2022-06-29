@@ -12,7 +12,7 @@ import (
 )
 
 type CloudInit struct {
-	Name        string `json:"name"`
+	Name        string `json:"name"          binding:"required"`
 	UserData    string `json:"user_data"`
 	NetworkData string `json:"network_data"`
 }
@@ -38,8 +38,8 @@ func GetAllCloudInits(ctx *gin.Context) {
 	cloudinits, err := client.Clientset.CloudInits().CloudInits(namespace).List(context.TODO(), metav1.ListOptions{})
 
 	if err != nil || len(cloudinits.Items) == 0 {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "not found",
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error: " + err.Error(),
 		})
 		return
 	}
@@ -58,8 +58,8 @@ func GetCloudInit(ctx *gin.Context) {
 	cloudinit, err := client.Clientset.CloudInits().CloudInits(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "not found",
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error: " + err.Error(),
 		})
 		return
 	}
@@ -71,7 +71,7 @@ func CreateCloudInit(ctx *gin.Context) {
 	var c CloudInit
 	if err := ctx.ShouldBindJSON(&c); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "request invalid",
+			"message": "request invalid: " + err.Error(),
 		})
 		return
 	}
@@ -94,8 +94,8 @@ func CreateCloudInit(ctx *gin.Context) {
 
 	ret, err := client.Clientset.CloudInits().CloudInits(namespace).Create(context.TODO(), cloudinit, metav1.CreateOptions{})
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "error",
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error: " + err.Error(),
 		})
 		return
 	}
@@ -107,7 +107,7 @@ func UpdateCloudInit(ctx *gin.Context) {
 	var c CloudInit
 	if err := ctx.ShouldBindJSON(&c); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "request invalid",
+			"message": "request invalid: " + err.Error(),
 		})
 		return
 	}
@@ -119,8 +119,8 @@ func UpdateCloudInit(ctx *gin.Context) {
 	cloudinit, err := client.Clientset.CloudInits().CloudInits(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "not found",
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error: " + err.Error(),
 		})
 		return
 	}
@@ -135,7 +135,7 @@ func UpdateCloudInit(ctx *gin.Context) {
 	ret, err := client.Clientset.CloudInits().CloudInits(namespace).Update(context.TODO(), cloudinit, metav1.UpdateOptions{})
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "update error",
+			"message": "update error: " + err.Error(),
 		})
 		return
 	}
@@ -149,8 +149,8 @@ func DeleteCloudInit(ctx *gin.Context) {
 	err := client.Clientset.CloudInits().CloudInits(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "not found",
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error: " + err.Error(),
 		})
 		return
 	}

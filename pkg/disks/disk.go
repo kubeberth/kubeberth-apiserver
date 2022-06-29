@@ -13,8 +13,8 @@ import (
 )
 
 type Disk struct {
-	Name   string                   `json:"name"`
-	Size   string                   `json:"size"`
+	Name   string                `json:"name"    binding:"required"`
+	Size   string                `json:"size"    binding:"required"`
 	Source *berth.AttachedSource `json:"source"`
 }
 
@@ -46,9 +46,9 @@ func GetAllDisks(ctx *gin.Context) {
 	namespace := "kubeberth"
 	disks, err := client.Clientset.Disks().Disks(namespace).List(context.TODO(), metav1.ListOptions{})
 
-	if err != nil || len(disks.Items) == 0 {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "not found",
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error: " + err.Error(),
 		})
 		return
 	}
@@ -67,8 +67,8 @@ func GetDisk(ctx *gin.Context) {
 	disk, err := client.Clientset.Disks().Disks(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "not found.",
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error: " + err.Error(),
 		})
 		return
 	}
@@ -80,7 +80,7 @@ func CreateDisk(ctx *gin.Context) {
 	var d Disk
 	if err := ctx.ShouldBindJSON(&d); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "request invalid",
+			"message": "request invalid: " + err.Error(),
 		})
 		return
 	}
@@ -119,8 +119,8 @@ func CreateDisk(ctx *gin.Context) {
 
 	ret, err := client.Clientset.Disks().Disks(namespace).Create(context.TODO(), disk, metav1.CreateOptions{})
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "error",
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error: " + err.Error(),
 		})
 		return
 	}
@@ -132,7 +132,7 @@ func UpdateDisk(ctx *gin.Context) {
 	var d Disk
 	if err := ctx.ShouldBindJSON(&d); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "request invalid",
+			"message": "request invalid: " + err.Error(),
 		})
 		return
 	}
@@ -144,8 +144,8 @@ func UpdateDisk(ctx *gin.Context) {
 	disk, err := client.Clientset.Disks().Disks(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "update error",
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "update error: " + err.Error(),
 		})
 		return
 	}
@@ -163,8 +163,8 @@ func UpdateDisk(ctx *gin.Context) {
 
 	ret, err := client.Clientset.Disks().Disks(namespace).Update(context.TODO(), disk, metav1.UpdateOptions{})
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "update error",
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "update error: " + err.Error(),
 		})
 		return
 	}
@@ -178,8 +178,8 @@ func DeleteDisk(ctx *gin.Context) {
 	err := client.Clientset.Disks().Disks(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "not found",
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error: " + err.Error(),
 		})
 		return
 	}

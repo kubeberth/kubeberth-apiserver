@@ -12,8 +12,8 @@ import (
 )
 
 type Archive struct {
-	Name string `json:"name"`
-	URL  string `json:"url"`
+	Name string `json:"name" binding:"required"`
+	URL  string `json:"url"  binding:"required"`
 }
 
 func convertArchive2Archive(archive v1alpha1.Archive) *Archive {
@@ -30,8 +30,8 @@ func GetAllArchives(ctx *gin.Context) {
 	archives, err := client.Clientset.Archives().Archives(namespace).List(context.TODO(), metav1.ListOptions{})
 
 	if err != nil || len(archives.Items) == 0 {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "not found",
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error: " + err.Error(),
 		})
 		return
 	}
@@ -50,8 +50,8 @@ func GetArchive(ctx *gin.Context) {
 	archive, err := client.Clientset.Archives().Archives(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "not found",
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error: " + err.Error(),
 		})
 		return
 	}
@@ -63,7 +63,7 @@ func CreateArchive(ctx *gin.Context) {
 	var a Archive
 	if err := ctx.ShouldBindJSON(&a); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "request invalid",
+			"message": "request invalid: " + err.Error(),
 		})
 		return
 	}
@@ -84,8 +84,8 @@ func CreateArchive(ctx *gin.Context) {
 
 	ret, err := client.Clientset.Archives().Archives(namespace).Create(context.TODO(), archive, metav1.CreateOptions{})
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "error",
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error: " + err.Error(),
 		})
 		return
 	}
@@ -97,7 +97,7 @@ func UpdateArchive(ctx *gin.Context) {
 	var a Archive
 	if err := ctx.ShouldBindJSON(&a); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "request invalid",
+			"message": "request invalid: " + err.Error(),
 		})
 		return
 	}
@@ -108,8 +108,8 @@ func UpdateArchive(ctx *gin.Context) {
 	archive, err := client.Clientset.Archives().Archives(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "not found",
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error: " + err.Error(),
 		})
 		return
 	}
@@ -122,8 +122,8 @@ func UpdateArchive(ctx *gin.Context) {
 
 	ret, err := client.Clientset.Archives().Archives(namespace).Update(context.TODO(), archive, metav1.UpdateOptions{})
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "update error",
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "update error: " + err.Error(),
 		})
 		return
 	}
@@ -137,8 +137,8 @@ func DeleteArchive(ctx *gin.Context) {
 	err := client.Clientset.Archives().Archives(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "not found",
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error: " + err.Error(),
 		})
 		return
 	}

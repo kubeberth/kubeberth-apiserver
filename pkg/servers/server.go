@@ -14,7 +14,21 @@ import (
 	"github.com/kubeberth/kubeberth-operator/api/v1alpha1"
 )
 
-type Server struct {
+type ResponseServer struct {
+	Name       string                   `json:"name"`
+	State      string                   `json:"state"`
+	Running    bool                     `json:"running"`
+	CPU        *resource.Quantity       `json:"cpu"`
+	Memory     *resource.Quantity       `json:"memory"`
+	MACAddress string                   `json:"mac_address"`
+	IP         string                   `json:"ip"`
+	Hostname   string                   `json:"hostname"`
+	Hosting    string                   `json:"hosting"`
+	Disk       *berth.AttachedDisk      `json:"disk"`
+	CloudInit  *berth.AttachedCloudInit `json:"cloudinit"`
+}
+
+type RequestServer struct {
 	Name       string                   `json:"name"         binding:"required"`
 	Running    bool                     `json:"running"`
 	CPU        *resource.Quantity       `json:"cpu"          binding:"required"`
@@ -22,19 +36,22 @@ type Server struct {
 	MACAddress string                   `json:"mac_address"`
 	Hostname   string                   `json:"hostname"     binding:"required"`
 	Hosting    string                   `json:"hosting"`
+	IP         string                   `json:"ip"`
 	Disk       *berth.AttachedDisk      `json:"disk"         binding:"required"`
 	CloudInit  *berth.AttachedCloudInit `json:"cloudinit"`
 }
 
-func convertServer2Server(server v1alpha1.Server) *Server {
-	ret := &Server{
+func convertServer2ResponseServer(server v1alpha1.Server) *ResponseServer {
+	ret := &ResponseServer{
 		Name:       server.ObjectMeta.Name,
+		State:      server.Status.State,
 		Running:    *server.Spec.Running,
 		CPU:        server.Spec.CPU,
 		Memory:     server.Spec.Memory,
 		MACAddress: server.Spec.MACAddress,
+		IP:         server.Status.IP,
 		Hostname:   server.Spec.Hostname,
-		Hosting:    server.Spec.Hosting,
+		Hosting:    server.Status.Hosting,
 		Disk:       &berth.AttachedDisk{},
 		CloudInit:  &berth.AttachedCloudInit{},
 	}
@@ -61,9 +78,9 @@ func GetAllServers(ctx *gin.Context) {
 		return
 	}
 
-	var ret []*Server
+	var ret []*ResponseServer
 	for _, server := range servers.Items {
-		ret = append(ret, convertServer2Server(server))
+		ret = append(ret, convertServer2ResponseServer(server))
 	}
 
 	ctx.JSON(http.StatusOK, ret)
@@ -81,11 +98,11 @@ func GetServer(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, convertServer2Server(*server))
+	ctx.JSON(http.StatusOK, convertServer2ResponseServer(*server))
 }
 
 func CreateServer(ctx *gin.Context) {
-	var s Server
+	var s RequestServer
 	if err := ctx.ShouldBindJSON(&s); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "request invalid: " + err.Error(),
@@ -136,11 +153,11 @@ func CreateServer(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, convertServer2Server(*ret))
+	ctx.JSON(http.StatusCreated, convertServer2ResponseServer(*ret))
 }
 
 func UpdateServer(ctx *gin.Context) {
-	var s Server
+	var s RequestServer
 	if err := ctx.ShouldBindJSON(&s); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "request invalid: " + err.Error(),
@@ -197,7 +214,7 @@ func UpdateServer(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, convertServer2Server(*ret))
+	ctx.JSON(http.StatusCreated, convertServer2ResponseServer(*ret))
 }
 
 func DeleteServer(ctx *gin.Context) {

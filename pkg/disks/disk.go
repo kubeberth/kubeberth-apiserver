@@ -12,31 +12,25 @@ import (
 	"github.com/kubeberth/kubeberth-operator/api/v1alpha1"
 )
 
-type Disk struct {
+type ResponseDisk struct {
+	Name       string `json:"name"`
+	Size       string `json:"size"`
+	State      string `json:"state"`
+	AttachedTo string `json:"attachedTo"`
+}
+
+type RequestDisk struct {
 	Name   string                `json:"name"    binding:"required"`
 	Size   string                `json:"size"    binding:"required"`
 	Source *berth.AttachedSource `json:"source"`
 }
 
-func convertDisk2Disk(disk v1alpha1.Disk) *Disk {
-	ret := &Disk{
-		Name:   disk.ObjectMeta.Name,
-		Size:   disk.Spec.Size,
-		Source: &berth.AttachedSource{},
-	}
-
-	if disk.Spec.Source != nil {
-		if disk.Spec.Source.Archive != nil {
-			ret.Source.Archive = &berth.AttachedArchive{
-				Name: disk.Spec.Source.Archive.Name,
-			}
-		}
-
-		if disk.Spec.Source.Disk != nil {
-			ret.Source.Disk = &berth.AttachedDisk{
-				Name: disk.Spec.Source.Disk.Name,
-			}
-		}
+func convertDisk2ResponseDisk(disk v1alpha1.Disk) *ResponseDisk {
+	ret := &ResponseDisk{
+		Name:       disk.ObjectMeta.Name,
+		Size:       disk.Spec.Size,
+		State:      disk.Status.State,
+		AttachedTo: disk.Status.AttachedTo,
 	}
 
 	return ret
@@ -53,9 +47,9 @@ func GetAllDisks(ctx *gin.Context) {
 		return
 	}
 
-	var ret []*Disk
+	var ret []*ResponseDisk
 	for _, disk := range disks.Items {
-		ret = append(ret, convertDisk2Disk(disk))
+		ret = append(ret, convertDisk2ResponseDisk(disk))
 	}
 
 	ctx.JSON(http.StatusOK, ret)
@@ -73,11 +67,11 @@ func GetDisk(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, convertDisk2Disk(*disk))
+	ctx.JSON(http.StatusOK, convertDisk2ResponseDisk(*disk))
 }
 
 func CreateDisk(ctx *gin.Context) {
-	var d Disk
+	var d RequestDisk
 	if err := ctx.ShouldBindJSON(&d); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "request invalid: " + err.Error(),
@@ -125,11 +119,11 @@ func CreateDisk(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, convertDisk2Disk(*ret))
+	ctx.JSON(http.StatusCreated, convertDisk2ResponseDisk(*ret))
 }
 
 func UpdateDisk(ctx *gin.Context) {
-	var d Disk
+	var d RequestDisk
 	if err := ctx.ShouldBindJSON(&d); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "request invalid: " + err.Error(),
@@ -169,7 +163,7 @@ func UpdateDisk(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, convertDisk2Disk(*ret))
+	ctx.JSON(http.StatusCreated, convertDisk2ResponseDisk(*ret))
 }
 
 func DeleteDisk(ctx *gin.Context) {

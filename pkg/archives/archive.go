@@ -12,14 +12,14 @@ import (
 )
 
 type Archive struct {
-	Name string `json:"name" binding:"required"`
-	URL  string `json:"url"  binding:"required"`
+	Name       string `json:"name"       binding:"required"`
+	Repository string `json:"repository"`
 }
 
 func convertArchive2Archive(archive v1alpha1.Archive) *Archive {
 	ret := &Archive{
-		Name: archive.ObjectMeta.Name,
-		URL:  archive.Spec.URL,
+		Name:       archive.ObjectMeta.Name,
+		Repository: archive.Spec.Repository,
 	}
 
 	return ret
@@ -70,7 +70,7 @@ func CreateArchive(ctx *gin.Context) {
 
 	name := a.Name
 	namespace := "kubeberth"
-	url := a.URL
+	repository := a.Repository
 
 	archive := &v1alpha1.Archive{
 		ObjectMeta: metav1.ObjectMeta{
@@ -78,7 +78,7 @@ func CreateArchive(ctx *gin.Context) {
 			Namespace: namespace,
 		},
 		Spec: v1alpha1.ArchiveSpec{
-			URL: url,
+			Repository: repository,
 		},
 	}
 
@@ -104,7 +104,7 @@ func UpdateArchive(ctx *gin.Context) {
 
 	name := a.Name
 	namespace := "kubeberth"
-	url := a.URL
+	repository := a.Repository
 	archive, err := client.Clientset.Archives().Archives(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	if err != nil {
@@ -115,7 +115,7 @@ func UpdateArchive(ctx *gin.Context) {
 	}
 
 	spec := v1alpha1.ArchiveSpec{
-		URL: url,
+		Repository: repository,
 	}
 
 	archive.Spec = spec

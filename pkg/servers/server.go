@@ -51,9 +51,13 @@ func convertServer2ResponseServer(server v1alpha1.Server) *ResponseServer {
 		MACAddress: server.Spec.MACAddress,
 		IP:         server.Status.IP,
 		Hostname:   server.Spec.Hostname,
-		Hosting:    server.Status.Hosting,
+		Hosting:    server.Spec.Hosting,
 		Disk:       &berth.AttachedDisk{},
 		CloudInit:  &berth.AttachedCloudInit{},
+	}
+
+	if ret.Hosting == "" {
+		ret.Hosting = server.Status.Hosting
 	}
 
 	if server.Spec.Disk != nil {

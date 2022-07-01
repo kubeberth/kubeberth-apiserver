@@ -39,9 +39,9 @@ EXPECT="https://minio.home.arpa:9000/kubevirt/images/ubuntu-20.04-server-cloudim
 ACTUAL=`curl -s -XPOST -H 'Content-Type:application/json' \
 -d '{ \
   "name": "test", \
-  "url":"https://minio.home.arpa:9000/kubevirt/images/ubuntu-20.04-server-cloudimg-arm64.img" \
+  "repository":"https://minio.home.arpa:9000/kubevirt/images/ubuntu-20.04-server-cloudimg-arm64.img" \
 }' \
-$API_ENDPOINT/archives | jq .url | tr -d '"'`
+$API_ENDPOINT/archives | jq .repository | tr -d '"'`
 is_equal "$EXPECT" "$ACTUAL"
 RET=$?
 echo "Creating Archive"
@@ -52,7 +52,7 @@ fi
 sleep 1
 
 EXPECT="https://minio.home.arpa:9000/kubevirt/images/ubuntu-20.04-server-cloudimg-arm64.img"
-ACTUAL=`curl -s -XGET $API_ENDPOINT/archives/test | jq .url | tr -d '"'`
+ACTUAL=`curl -s -XGET $API_ENDPOINT/archives/test | jq .repository | tr -d '"'`
 is_equal "$EXPECT" "$ACTUAL"
 RET=$?
 echo "Reading Archive"
@@ -66,9 +66,9 @@ EXPECT="http://minio.home.arpa:9000/kubevirt/images/ubuntu-20.04-server-cloudimg
 ACTUAL=`curl -s -XPUT -H 'Content-Type:application/json' \
 -d '{ \
   "name": "test", \
-  "url":"http://minio.home.arpa:9000/kubevirt/images/ubuntu-20.04-server-cloudimg-arm64.img" \
+  "repository":"http://minio.home.arpa:9000/kubevirt/images/ubuntu-20.04-server-cloudimg-arm64.img" \
 }' \
-$API_ENDPOINT/archives/test | jq .url | tr -d '"'`
+$API_ENDPOINT/archives/test | jq .repository | tr -d '"'`
 is_equal "$EXPECT" "$ACTUAL"
 RET=$?
 echo "Updating Archive"

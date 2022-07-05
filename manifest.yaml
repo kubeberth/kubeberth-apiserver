@@ -12,6 +12,7 @@ rules:
   - cloudinits
   - disks
   - servers
+  - loadbalancers
   verbs:
   - create
   - delete

@@ -12,6 +12,7 @@ import (
 	"github.com/kubeberth/kubeberth-apiserver/pkg/cloudinits"
 	"github.com/kubeberth/kubeberth-apiserver/pkg/disks"
 	"github.com/kubeberth/kubeberth-apiserver/pkg/healthz"
+	"github.com/kubeberth/kubeberth-apiserver/pkg/loadbalancers"
 	"github.com/kubeberth/kubeberth-apiserver/pkg/servers"
 	clientset "github.com/kubeberth/kubeberth-operator/pkg/clientset/versioned"
 )
@@ -67,6 +68,14 @@ func main() {
 	r.POST("/servers/", servers.CreateServer)
 	r.PUT("/servers/:name", servers.UpdateServer)
 	r.DELETE("/servers/:name", servers.DeleteServer)
+
+	r.GET("/loadbalancers", loadbalancers.GetAllLoadBalancers)
+	r.GET("/loadbalancers/", loadbalancers.GetAllLoadBalancers)
+	r.GET("/loadbalancers/:name", loadbalancers.GetLoadBalancer)
+	r.POST("/loadbalancers", loadbalancers.CreateLoadBalancer)
+	r.POST("/loadbalancers/", loadbalancers.CreateLoadBalancer)
+	r.PUT("/loadbalancers/:name", loadbalancers.UpdateLoadBalancer)
+	r.DELETE("/loadbalancers/:name", loadbalancers.DeleteLoadBalancer)
 
 	r.GET("/healthz", healthz.Healthz)
 	r.GET("/healthz/", healthz.Healthz)

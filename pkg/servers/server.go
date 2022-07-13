@@ -24,7 +24,7 @@ type ResponseServer struct {
 	IP         string                   `json:"ip"`
 	Hostname   string                   `json:"hostname"`
 	Hosting    string                   `json:"hosting"`
-	Disk       *berth.AttachedDisk      `json:"disk"`
+	Disks      []berth.AttachedDisk     `json:"disks"`
 	CloudInit  *berth.AttachedCloudInit `json:"cloudinit"`
 }
 
@@ -37,7 +37,7 @@ type RequestServer struct {
 	Hostname   string                   `json:"hostname"     binding:"required"`
 	Hosting    string                   `json:"hosting"`
 	IP         string                   `json:"ip"`
-	Disk       *berth.AttachedDisk      `json:"disk"         binding:"required"`
+	Disks      []berth.AttachedDisk     `json:"disks"`
 	CloudInit  *berth.AttachedCloudInit `json:"cloudinit"`
 }
 
@@ -52,7 +52,7 @@ func convertServer2ResponseServer(server v1alpha1.Server) *ResponseServer {
 		IP:         server.Status.IP,
 		Hostname:   server.Spec.Hostname,
 		Hosting:    server.Spec.Hosting,
-		Disk:       &berth.AttachedDisk{},
+		Disks:      []berth.AttachedDisk{},
 		CloudInit:  &berth.AttachedCloudInit{},
 	}
 
@@ -60,8 +60,8 @@ func convertServer2ResponseServer(server v1alpha1.Server) *ResponseServer {
 		ret.Hosting = server.Status.Hosting
 	}
 
-	if server.Spec.Disk != nil {
-		ret.Disk.Name = server.Spec.Disk.Name
+	if server.Spec.Disks != nil {
+		ret.Disks = server.Spec.Disks
 	}
 
 	if server.Spec.CloudInit != nil {
@@ -122,15 +122,8 @@ func CreateServer(ctx *gin.Context) {
 	macAddress := s.MACAddress
 	hostname   := s.Hostname
 	hosting    := s.Hosting
-
-	var disk       *berth.AttachedDisk
-	var cloudinit  *berth.AttachedCloudInit
-	if s.Disk != nil {
-		disk = &berth.AttachedDisk{ Name: s.Disk.Name }
-	}
-	if s.CloudInit != nil  {
-		cloudinit = &berth.AttachedCloudInit{ Name: s.CloudInit.Name }
-	}
+	disks      := s.Disks
+	cloudinit  := s.CloudInit
 
 	server := &v1alpha1.Server{
 		ObjectMeta: metav1.ObjectMeta{
@@ -144,7 +137,7 @@ func CreateServer(ctx *gin.Context) {
 			MACAddress: macAddress,
 			Hostname:   hostname,
 			Hosting:    hosting,
-			Disk:       disk,
+			Disks:      disks,
 			CloudInit:  cloudinit,
 		},
 	}
@@ -177,16 +170,8 @@ func UpdateServer(ctx *gin.Context) {
 	macAddress := s.MACAddress
 	hostname   := s.Hostname
 	hosting    := s.Hosting
-
-	var disk      *berth.AttachedDisk
-	var cloudinit *berth.AttachedCloudInit
-
-	if s.Disk != nil {
-		disk = &berth.AttachedDisk{ Name: s.Disk.Name }
-	}
-	if s.CloudInit != nil  {
-		cloudinit = &berth.AttachedCloudInit{ Name: s.CloudInit.Name }
-	}
+	disks      := s.Disks
+	cloudinit  := s.CloudInit
 
 	server, err := client.Clientset.Servers().Servers(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
@@ -204,7 +189,7 @@ func UpdateServer(ctx *gin.Context) {
 		MACAddress: macAddress,
 		Hostname:   hostname,
 		Hosting:    hosting,
-		Disk:       disk,
+		Disks:      disks,
 		CloudInit:  cloudinit,
 	}
 

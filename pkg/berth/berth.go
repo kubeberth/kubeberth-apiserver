@@ -5,6 +5,7 @@ import (
 	"github.com/kubeberth/kubeberth-operator/api/v1alpha1"
 )
 
+type AttachedISOImage  = v1alpha1.AttachedISOImage
 type AttachedArchive   = v1alpha1.AttachedArchive
 type AttachedCloudInit = v1alpha1.AttachedCloudInit
 type AttachedDisk      = v1alpha1.AttachedDisk

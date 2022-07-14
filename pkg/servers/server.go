@@ -25,6 +25,7 @@ type ResponseServer struct {
 	Hostname   string                   `json:"hostname"`
 	Hosting    string                   `json:"hosting"`
 	Disks      []berth.AttachedDisk     `json:"disks"`
+	ISOImage   *berth.AttachedISOImage  `json:"isoimage"`
 	CloudInit  *berth.AttachedCloudInit `json:"cloudinit"`
 }
 
@@ -38,6 +39,7 @@ type RequestServer struct {
 	Hosting    string                   `json:"hosting"`
 	IP         string                   `json:"ip"`
 	Disks      []berth.AttachedDisk     `json:"disks"`
+	ISOImage   *berth.AttachedISOImage  `json:"isoimage"`
 	CloudInit  *berth.AttachedCloudInit `json:"cloudinit"`
 }
 
@@ -53,6 +55,7 @@ func convertServer2ResponseServer(server v1alpha1.Server) *ResponseServer {
 		Hostname:   server.Spec.Hostname,
 		Hosting:    server.Spec.Hosting,
 		Disks:      []berth.AttachedDisk{},
+		ISOImage:   &berth.AttachedISOImage{},
 		CloudInit:  &berth.AttachedCloudInit{},
 	}
 
@@ -62,6 +65,10 @@ func convertServer2ResponseServer(server v1alpha1.Server) *ResponseServer {
 
 	if server.Spec.Disks != nil {
 		ret.Disks = server.Spec.Disks
+	}
+
+	if server.Spec.ISOImage != nil {
+		ret.ISOImage.Name = server.Spec.ISOImage.Name
 	}
 
 	if server.Spec.CloudInit != nil {
@@ -123,6 +130,7 @@ func CreateServer(ctx *gin.Context) {
 	hostname   := s.Hostname
 	hosting    := s.Hosting
 	disks      := s.Disks
+	isoimage   := s.ISOImage
 	cloudinit  := s.CloudInit
 
 	server := &v1alpha1.Server{
@@ -138,6 +146,7 @@ func CreateServer(ctx *gin.Context) {
 			Hostname:   hostname,
 			Hosting:    hosting,
 			Disks:      disks,
+			ISOImage:   isoimage,
 			CloudInit:  cloudinit,
 		},
 	}
@@ -171,6 +180,7 @@ func UpdateServer(ctx *gin.Context) {
 	hostname   := s.Hostname
 	hosting    := s.Hosting
 	disks      := s.Disks
+	isoimage   := s.ISOImage
 	cloudinit  := s.CloudInit
 
 	server, err := client.Clientset.Servers().Servers(namespace).Get(context.TODO(), name, metav1.GetOptions{})
@@ -190,6 +200,7 @@ func UpdateServer(ctx *gin.Context) {
 		Hostname:   hostname,
 		Hosting:    hosting,
 		Disks:      disks,
+		ISOImage:   isoimage,
 		CloudInit:  cloudinit,
 	}
 

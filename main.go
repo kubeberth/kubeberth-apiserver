@@ -7,13 +7,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/kubeberth/kubeberth-apiserver/pkg/archives"
 	"github.com/kubeberth/kubeberth-apiserver/pkg/client"
+	"github.com/kubeberth/kubeberth-apiserver/pkg/isoimages"
+	"github.com/kubeberth/kubeberth-apiserver/pkg/archives"
 	"github.com/kubeberth/kubeberth-apiserver/pkg/cloudinits"
 	"github.com/kubeberth/kubeberth-apiserver/pkg/disks"
-	"github.com/kubeberth/kubeberth-apiserver/pkg/healthz"
-	"github.com/kubeberth/kubeberth-apiserver/pkg/loadbalancers"
 	"github.com/kubeberth/kubeberth-apiserver/pkg/servers"
+	"github.com/kubeberth/kubeberth-apiserver/pkg/loadbalancers"
+	"github.com/kubeberth/kubeberth-apiserver/pkg/healthz"
 	clientset "github.com/kubeberth/kubeberth-operator/pkg/clientset/versioned"
 )
 
@@ -36,6 +37,14 @@ func main() {
 
 	g := gin.Default()
 	r := g.Group("/api/v1alpha1")
+
+	r.GET("/isoimages", isoimages.GetAllISOImages)
+	r.GET("/isoimages/", isoimages.GetAllISOImages)
+	r.GET("/isoimages/:name", isoimages.GetISOImage)
+	r.POST("/isoimages", isoimages.CreateISOImage)
+	r.POST("/isoimages/", isoimages.CreateISOImage)
+	r.PUT("/isoimages/:name", isoimages.UpdateISOImage)
+	r.DELETE("/isoimages/:name", isoimages.DeleteISOImage)
 
 	r.GET("/archives", archives.GetAllArchives)
 	r.GET("/archives/", archives.GetAllArchives)

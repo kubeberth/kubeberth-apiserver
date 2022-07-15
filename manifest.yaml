@@ -8,6 +8,7 @@ rules:
 - apiGroups:
   - berth.kubeberth.io
   resources:
+  - isoimages
   - archives
   - cloudinits
   - disks

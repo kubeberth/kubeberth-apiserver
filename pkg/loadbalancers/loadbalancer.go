@@ -14,12 +14,13 @@ import (
 )
 
 type ResponseLoadBalancer struct {
-	Name     string                 `json:"name"`
-	State    string                 `json:"state"`
-	IP       string                 `json:"ip"`
-	Backends []v1alpha1.Destination `json:"backends"`
-	Ports    []corev1.ServicePort   `json:"ports"`
-	Health   string                 `json:"health"`
+	Name           string                 `json:"name"`
+	State          string                 `json:"state"`
+	IP             string                 `json:"ip"`
+	Backends       []v1alpha1.Destination `json:"backends"`
+	Ports          []corev1.ServicePort   `json:"ports"`
+	BackendsStatus map[string]string      `json:backendsStatus"`
+	Health         string                 `json:"health"`
 }
 
 type RequestLoadBalancer struct {
@@ -35,6 +36,7 @@ func convertLoadBalancer2ResponseLoadBalancer(loadbalancer v1alpha1.LoadBalancer
 		IP:       loadbalancer.Status.IP,
 		Backends: loadbalancer.Status.Backends,
 		Ports:    loadbalancer.Spec.Ports,
+		BackendsStatus: loadbalancer.Status.BackendsStatus,
 		Health:   loadbalancer.Status.Health,
 	}
 
